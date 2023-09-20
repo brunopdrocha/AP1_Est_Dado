@@ -4,11 +4,12 @@
 * Bruno Xavier
 * Bruno Pilão
 * Ian Amoedo
- 
+* Breno Rego
+
 # Definicao de Produto
   Devemos possuir um contador de produtos inicializando no valor 0
 
-    EXEMPLO 
+    EXEMPLO
     var TotalProdutos = 0
 
     Produto
@@ -27,7 +28,7 @@
   Devemos armazenar os produtos em uma lista com um limite de 50 elementos
 
     EXEMPLO DO PRODUTO
-    
+
     ListaProdutos
     -Maximo de 50 itens
     -Lista Sequencial
@@ -53,8 +54,8 @@
 
     Pedido
 
-    Id int 
-    Delivery bool deve (false comer no locar / true realizar entrega) 
+    Id int
+    Delivery bool deve (false comer no locar / true realizar entrega)
     Produtos [10] Produto Pedido
     DataHora ?
     Valor total float64
@@ -80,24 +81,24 @@
     EXEMPLO DA FILA
 
     Obs: Devemos puxar o valores do pedido para a fila
-    
+
     -Lista no maximo de 1000 pedidos
     -Fila
-    -Adicionar 
+    -Adicionar
     -Expandir
       -Faturamento (Faturamento deve ser atualizado)
       -Tempo medio
 
-      
-      
 
-  
-  # Requisitos EXTRAS 
+
+
+
+  # Requisitos EXTRAS
 
    Há três requisitos que os sócios do McRonald’s gostariam muito que fossem implementados já no MVP, mas que não estão no escopo do serviço:
 
 -  Cadastro de produtos em lote: os sócios gostariam de, com um único comando na CLI, poder passar os dados de vários produtos ao mesmo tempo, para que o sistema armazenasse todas as informações sem precisar inserir a opção de cadastro múltiplas vezes;
 -  Leitura dos produtos em arquivo de texto: caso os produtos possam ser lidos a partir de um arquivo .csv, isso agilizaria muito o processo de testes e validação do sistema;
 -  Exibir os pedidos ainda em aberto: exibe na tela todos os pedidos que estão em andamento, na ordem em que foram abertos.
-    
+
 
