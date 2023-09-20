@@ -11,25 +11,21 @@ type Produto struct {
 	Valor     int
 }
 
-func NewProduto(nome string) *Produto {
+func (p *Produto) DefinirId() {
 	TotalProdutos++
-	i.Id = TotalProdutos
-	fmt.Println("defina o Valor do produto")
-	fmt.Scanln(TotalProdutos)
-	p.Valor= Valor
+	var m, d string
+	p.Id = TotalProdutos
 	fmt.Println("defina o nome do produto")
-	fmt.Scanln(&p)
-	p.Nome = Nome
-	return &Produto{Id: TotalProdutos, Nome: nome}
-}
+	fmt.Scanln(&m)
+	p.Nome = *&m
+	fmt.Println("descricao do Produto")
+	fmt.Scanln(&d)
+	p.Descricao = *&d
 
-func (p *Produto) DefinirDesc() {
-	fmt.Println("defina o nome do produto")
-	fmt.Scanln(&p)
-	p.Nome = p.Nome
 }
-func (p *Produto) DefinirValor() {
-	fmt.Println("defina o Valor do produto")
-	fmt.Scanln(&p)
-	p.Valor= p.Valor
+func (p*Produto)DefinirValor()  {
+	var v int
+	fmt.Println("Valor do Produto")
+	fmt.Scanln(&v)
+	p.Valor = *&v
 }

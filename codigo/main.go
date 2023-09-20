@@ -7,10 +7,8 @@ import (
 )
 
 func main() {
-
 	c.Cli()
 	fmt.Println("--------------")
 	fmt.Println(p.TotalProdutos)
-	fmt.Println(p.DefinirNome)
-
+	
 }
