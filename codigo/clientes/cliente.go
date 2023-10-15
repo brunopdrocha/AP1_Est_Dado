@@ -1,7 +1,7 @@
 package clientes
 
 import (
-	"Ap1/codigo/produtos"
+	p "Ap1/codigo/produtos"
 	"fmt"
 )
 
@@ -15,16 +15,24 @@ func Cli() {
 		return
 	}
 
-	var listaProdutos []produtos.Produto
+	var listaProdutos []p.Produto
 
 	for i := 0; i < escolha; i++ {
-		produto := produtos.Produto{Nome: "prod1", Descricao: "descricao"}
+		produto := p.Produto{Nome: "prod1", Descricao: "descricao"}
 		produto.DefinirId()
 		produto.DefinirValor()
 		listaProdutos = append(listaProdutos, produto)
 		fmt.Println(produto)
 	}
 
+
+
 	fmt.Println("Total de produtos inseridos:", len(listaProdutos))
 	fmt.Println(listaProdutos)
+
+
+
+
 }
+
+

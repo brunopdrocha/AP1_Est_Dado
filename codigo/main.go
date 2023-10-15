@@ -14,6 +14,7 @@ func main() {
 		fmt.Println("escolha a função que deseja")
 		fmt.Println("1- voltando para a interface")
 		fmt.Println("2- Add produtos Até 10 produtos ")
+		//afmt.Println("3- Add 1 produto ")
 		fmt.Scanln(&op)
 		switch op {
 		case 1:
@@ -25,12 +26,19 @@ func main() {
 
 		case 2:
 			{
-				c.Cli()
 				fmt.Println("ADD Produto")
+				c.Cli()
+
 				fmt.Println(p.TotalProdutos)
 
 			}
+
+		default:
+
+			return
+
 		}
 
 	}
+
 }
