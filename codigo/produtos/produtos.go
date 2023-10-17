@@ -6,9 +6,9 @@ var TotalProdutos = 0
 var ListaProduto [10]*Produto
 var TotalPedidos = 0
 var ListaPedido [1000]*Pedido
-var FaturamentoTotal = 0
 var numeroPedidosEmAndamento int
-var produtopa = numeroPedidosEmAndamento
+var Tudo float64
+
 type Produto struct {
 	Id        int
 	Nome      string
@@ -55,15 +55,13 @@ func RemoverProduto() {
 			fmt.Println("Produto removido com sucesso")
 			break
 		}
-		fmt.Println("id inexistente")
-		break
 	}
-
 }
 
 func ExibirProdutos() {
-	if len(ListaProduto) == 0 {
+	if TotalProdutos == 0 {
 		fmt.Println("Nenhum produto cadastrado.")
+		return
 	}
 
 	for _, produto := range ListaProduto {
@@ -133,11 +131,12 @@ func (p *Pedido) AdicionaPedido() {
 		var opcao int
 		fmt.Scan(&opcao)
 		maisProdutos = opcao == 1
+		fmt.Println("1-Delivery/0-Retirada")
+		fmt.Scanln(&p.Delivery)
 
 	}
 
 	p.CalcularValorTotal()
-
 }
 
 func (pp *ProdutoPedido) CalcularPreco() float64 {
@@ -153,65 +152,63 @@ func (p *Pedido) CalcularValorTotal() {
 	p.ValorTotal = total + frete
 	fmt.Println("Valor total do pedido R$:", total)
 	fmt.Println("Valor total do pedido com frete (R$ 10,00) R$:", p.ValorTotal)
-	fmt.Println("1-Delivery/0-Retirada")
 	fmt.Scanln(&p.Delivery)
+
+	if p.Delivery == true {
+		Tudo += p.ValorTotal
+	} else {
+		Tudo += total
+	}
+
 }
 
 func ExpedirPedido() {
-    for i, pedido := range ListaPedido {
-        if pedido != nil && pedido.Id != 0 && pedido.ValorTotal > 0 {
-            fmt.Println("Expedindo pedido ID:", pedido.Id)
-            fmt.Println("Delivery:", pedido.Delivery)
-            fmt.Println("Produtos:")
-            for _, produtoPedido := range pedido.Produto {
-                if produtoPedido.Produto.Id != 0 {
-                    fmt.Println(produtoPedido.Produto.Nome)
-                }
-            }
-            fmt.Println("Valor Total: R$", pedido.ValorTotal)
+	for i, pedido := range ListaPedido {
+		if pedido != nil && pedido.Id != 0 && pedido.ValorTotal > 0 {
+			fmt.Println("Expedindo pedido ID:", pedido.Id)
+			fmt.Println("Delivery:", pedido.Delivery)
+			fmt.Println("Produtos:")
+			for _, produtoPedido := range pedido.Produto {
+				if produtoPedido.Produto.Id != 0 {
+					fmt.Println(produtoPedido.Produto.Nome)
+				}
+			}
+			fmt.Println("Valor Total: R$", pedido.ValorTotal)
 
-            // Atualize a variável produtopa para refletir a expedição do pedido
-            produtopa--
-            
-            // Remova o pedido da lista
-            ListaPedido[i] = nil
-            break
-        }
-    }
-    fmt.Println("Pedido expedido.")
+			// Atualize a variável produtopa para refletir a expedição do pedido
+
+			ListaPedido[i] = nil
+			break
+		}
+	}
+	fmt.Println("Pedido expedido.")
 }
-
 
 func pedidoExpedido() bool {
 	numeroPedidosEncerrados := 0
 	for _, pedido := range ListaPedido {
-		if pedido != nil && pedido.Id != 0 && pedido.ValorTotal > 0 {
+		if pedido != nil && pedido.Id == 0 && pedido.ValorTotal > 0 {
 			numeroPedidosEncerrados++
-			return true
-
 		}
 	}
-	return false
+	return numeroPedidosEncerrados > 0
 }
 
 func ExibirMetricasSistema() {
-    numeroTotalProdutos := 0
-    for _, produto := range ListaProduto {
-        if produto != nil && produto.Id != 0 {
-            numeroTotalProdutos++
-        }
-    }
+	numeroTotalProdutos := 0
+	for _, produto := range ListaProduto {
+		if produto != nil && produto.Id != 0 {
+			numeroTotalProdutos++
+		}
+	}
 
-    faturamentoTotal := 0.0
+	faturamentoTotal := 0.0
+	for _, pedido := range ListaPedido {
+		if pedido != nil && pedido.Id == 0 {
+			faturamentoTotal += pedido.ValorTotal
+		}
+	}
 
-    for _, pedido := range ListaPedido {
-        if pedido != nil && pedido.Id == 0 {
-            faturamentoTotal += pedido.ValorTotal
-        }
-    }
-
-    fmt.Println("Número total de produtos cadastrados:", numeroTotalProdutos)
-    fmt.Println("Número de pedidos em andamento:", produtopa)
-    fmt.Println("Faturamento total até o momento: R$", faturamentoTotal)
+	fmt.Println("Número total de produtos cadastrados:", numeroTotalProdutos)
+	fmt.Println("Faturamento total até o momento: R$", faturamentoTotal)
 }
-
