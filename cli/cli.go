@@ -3,11 +3,11 @@ package cli
 import (
 	"bufio"
 	"fmt"
-	"os"
-	"strings"
 	"mcronalds/metricas"
 	pedidos "mcronalds/pedidos"
 	produtos "mcronalds/produtos"
+	"os"
+	"strings"
 )
 
 var scanner = bufio.NewReader(os.Stdin)
@@ -19,9 +19,11 @@ func opcoes() {
 	fmt.Println("3 - Buscar produto por id;")
 	fmt.Println("4 - Buscar produto por nome;")
 	fmt.Println("5 - Exibir todos os produtos;")
+	fmt.Println("10 - Exibe produtos POR NOME ;")
 	fmt.Println("6 - Adicionar pedido;")
 	fmt.Println("7 - Expedir pedido;")
 	fmt.Println("8 - Exibir métricas do sistema;")
+	fmt.Println("9 - Altera Preco ;")
 	fmt.Println("20 - Exibir todos os pedidos em andamento;")
 	fmt.Println("21 - Cadastrar produtos em lote;")
 	fmt.Println("100 - Sair do programa;")
@@ -51,6 +53,10 @@ func Cli() {
 			pedidos.Expedir()
 		case "8":
 			metricas.M.ExibirMetricas()
+		case "9":
+			alterarPreco()
+		case "10":
+			produtos.ExibirPorNome()
 		case "20":
 			pedidos.Exibir()
 		case "21":
@@ -150,7 +156,9 @@ func adicionarPedido() {
 	fmt.Println("Digite, em cada linha abaixo, o id do produto e a quantidade, separados por um espaço. Digite 0 0 para encerrar.")
 	for {
 		fmt.Scanln(&idProduto, &quantidade)
-		if idProduto == 0 && quantidade == 0 { break }
+		if idProduto == 0 && quantidade == 0 {
+			break
+		}
 
 		ret := pedido.AdicionarItem(idProduto, quantidade)
 		switch ret {
@@ -173,5 +181,17 @@ func cadastrarProdutosEmLote() {
 		if opcao != "s" {
 			break
 		}
+	}
+}
+func alterarPreco() {
+	id := leInt("Informe o ID do produto para alterar o preço: ")
+	novoPreco := leFloat("Informe o novo preço para o produto: ")
+
+	ret := produtos.AtualizarPreco(id, novoPreco)
+	switch ret {
+	case -1:
+		fmt.Println("Erro! Produto não encontrado.")
+	case 0:
+		fmt.Println("Preço do produto atualizado com sucesso!")
 	}
 }

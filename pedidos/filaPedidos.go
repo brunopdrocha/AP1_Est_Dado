@@ -70,6 +70,7 @@ Retorna 0 em caso de sucesso, ou -1 caso não haja pedidos na fila.
 func Expedir() int {
 	pedidoExpedido := excluir()
 	if (pedidoExpedido == Pedido{}) {
+		fmt.Println("Não há pedidos para expedir.")
 		return -1
 	}
 
@@ -82,7 +83,6 @@ func Expedir() int {
 	m.M.AtualizaExpedicao(int(tempoExpedicao), pedidoExpedido.PrecoTotal)
 	return 0
 }
-
 /*
 Exibe todos os pedidos ativos.
 */

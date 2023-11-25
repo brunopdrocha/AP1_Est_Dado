@@ -25,25 +25,36 @@ Adiciona o produto primeiro espaço vazio da lista.
 Caso já exista um produto com o mesmo id, não adiciona e retorna -3.
 Caso já exista um produto com o mesmo nome, não adiciona e retorna erro -2.
 Retorna -1 caso a lista esteja cheia, ou o número de produtos cadastrados em caso de sucesso.
-*/
-func AdicionarUnico(nome, descricao string, preco float64, id int) int {
-	if totalProdutos == maxProdutos { return -1 } // Overflow
+*/func AdicionarUnico(nome, descricao string, preco float64, id int) int {
+	if totalProdutos == maxProdutos {
+		return -1 // Overflow
+	}
 
 	for _, produto := range Produtos {
-		if (produto == Produto{}) { break }
 		if produto.Nome == nome {
-			return -2
+			return -2 // Produto com mesmo nome já existe
 		}
 	}
 
-	produtoCriado := tentarCriar(nome, descricao, preco, id)
-	if (produtoCriado == Produto{}) { return -3 }
+	maxID := -1
+	for _, produto := range Produtos {
+		if produto.Id > maxID {
+			maxID = produto.Id
+		}
+	}
+
+	novoID := maxID + 1
+	produtoCriado := tentarCriar(nome, descricao, preco, novoID)
+	if (produtoCriado == Produto{}) {
+		return -3 // Erro ao criar o produto
+	}
 
 	Produtos[totalProdutos] = produtoCriado
 	totalProdutos++
 	m.M.SomaProdutosCadastrados(1)
 	return totalProdutos
 }
+
 
 /*
 Localiza um produto a partir do seu id.
@@ -106,4 +117,27 @@ func Excluir(id int) int {
 	Produtos[totalProdutos] = Produto{}
 	m.M.SomaProdutosCadastrados(-1)
 	return 0
+}
+func ExibirPorNome() {
+	produtosOrdenados := make([]Produto, totalProdutos)
+	copy(produtosOrdenados, Produtos[:totalProdutos])
+
+	for i := 0; i < totalProdutos-1; i++ {
+		minIndex := i
+		for j := i + 1; j < totalProdutos; j++ {
+			if strings.ToLower(produtosOrdenados[j].Nome) < strings.ToLower(produtosOrdenados[minIndex].Nome) {
+				minIndex = j
+			}
+		}
+		if minIndex != i {
+			produtosOrdenados[i], produtosOrdenados[minIndex] = produtosOrdenados[minIndex], produtosOrdenados[i]
+		}
+	}
+
+	for _, produto := range produtosOrdenados {
+		if (produto == Produto{}) {
+			break
+		}
+		produto.Exibir()
+	}
 }

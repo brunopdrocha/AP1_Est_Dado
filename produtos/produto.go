@@ -43,3 +43,15 @@ func criar(nome, descricao string, preco float64, id int) Produto {
 
 	return p
 }
+func AtualizarPreco(id int, novoPreco float64) int {
+	produtoEncontrado, indice := BuscarId(id)
+	if indice == -1 {
+		return -1 // Produto não encontrado
+	}
+
+	// Atualiza apenas o preço do produto encontrado
+	produtoEncontrado.Preco = novoPreco
+	Produtos[indice] = produtoEncontrado // Atualiza na lista de produtos
+
+	return 0 // Atualização bem-sucedida
+}
