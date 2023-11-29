@@ -2,8 +2,6 @@ package produtos
 
 import "fmt"
 
-var TotalProdutosJaCadastrados = 0
-
 type Produto struct {
 	Id        int
 	Nome      string
@@ -11,47 +9,56 @@ type Produto struct {
 	Preco     float64
 }
 
-/*
-Define um id de um produto, considerando todos os produtos já cadastrados.
-*/
-func (p *Produto) definirId() {
-	TotalProdutosJaCadastrados++
-	p.Id = TotalProdutosJaCadastrados
-}
 
-/*
-Exibe as informações de um produto no terminal.
-*/
-func (p *Produto) Exibir() {
+func (p Produto) Exibir() {
 	fmt.Println("\nProduto", p.Id)
 	fmt.Println(p.Nome)
 	fmt.Println(p.Descricao)
 	fmt.Printf("Preço: R$ %.2f\n", p.Preco)
 }
 
-/*
-Retorna um elemento do tipo Produto, com um id a ser definido ou com um id
-pré-definido.
-*/
-func criar(nome, descricao string, preco float64, id int) Produto {
-	p := Produto { Nome: nome, Descricao: descricao, Preco: preco }
-	if id == -1 {
-		p.definirId()
-	} else {
+func CriarProduto(nome, descricao string, preco float64, id int) Produto {
+	p := Produto{Nome: nome, Descricao: descricao, Preco: preco}
+	if id != -1 {
 		p.Id = id
 	}
-
 	return p
 }
-func AtualizarPreco(id int, novoPreco float64) int {
-	produtoEncontrado, indice := BuscarId(id)
+
+func (lp *ListaProdutos) AdicionarProduto(p Produto) {
+	novoNo := &NoProduto{Produto: p, Next: nil}
+	if lp.Head == nil {
+		lp.Head = novoNo
+		lp.Tail = novoNo
+	} else {
+		lp.Tail.Next = novoNo
+		lp.Tail = novoNo
+	}
+}
+
+func AtualizarPreco(lista *ListaProdutos, id int, novoPreco float64) int {
+	produtoEncontrado, indice := BuscarProduto(lista, id)
 	if indice == -1 {
 		return -1 // Produto não encontrado
 	}
 
 	// Atualiza apenas o preço do produto encontrado
 	produtoEncontrado.Preco = novoPreco
-	Produtos[indice] = produtoEncontrado // Atualiza na lista de produtos
 
 	return 0 // Atualização bem-sucedida
+}
+
+func BuscarProduto(lista *ListaProdutos, id int) (*Produto, int) {
+	atual := lista.Head
+	indice := 0
+
+	for atual != nil {
+		if atual.Produto.Id == id {
+			return &atual.Produto, indice
+		}
+		atual = atual.Next
+		indice++
+	}
+
+	return nil, -1 // Produto não encontrado
 }

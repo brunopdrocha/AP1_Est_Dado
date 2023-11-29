@@ -8,6 +8,7 @@ import (
 	produtos "mcronalds/produtos"
 	"os"
 	"strings"
+	"strconv"
 )
 
 var scanner = bufio.NewReader(os.Stdin)
@@ -54,7 +55,7 @@ func Cli() {
 		case "8":
 			metricas.M.ExibirMetricas()
 		case "9":
-			alterarPreco()
+			//alterarPreco()
 		case "10":
 			produtos.ExibirPorNome()
 		case "20":
@@ -91,23 +92,33 @@ func leInt(prompt string) int {
 }
 
 func cadastrarProduto() {
-	nome := leTexto("Nome do produto: ")
-	descricao := leTexto("Descrição: ")
-	preco := leFloat("Preço do produto (em R$): ")
+    nome := leTexto("Nome do produto: ")
+    descricao := leTexto("Descrição: ")
+    preco := leFloat("Preço do produto (em R$): ")
 
-	ret := produtos.AdicionarUnico(nome, descricao, preco, -1)
-	switch ret {
-	case -2:
-		fmt.Println("Erro! Produto já existe no cadastro.")
-	case -1:
-		fmt.Println("Erro! Lista de produtos está cheia.")
-	default:
-		fmt.Println("Produto cadastrado com sucesso!")
-	}
+    novoID := 1
+
+    // Procurar o próximo ID disponível na lista de produtos
+    for atual := produtos.ListaDeProdutos.Head; atual != nil; atual = atual.Next {
+        if atual.Produto.Id >= novoID {
+            novoID = atual.Produto.Id + 1
+        }
+    }
+
+    ret := produtos.AdicionarUnico(nome, descricao, preco, novoID)
+    switch ret {
+    case -2:
+        fmt.Println("Erro! Produto já existe no cadastro.")
+    case -1:
+        fmt.Println("Erro! Não é possível adicionar mais produtos.")
+    default:
+        fmt.Println("Produto cadastrado com sucesso!")
+    }
 }
 
 func removerProduto() {
-	id := leInt("Informe o id do produto a ser removido: ")
+	idStr := leTexto("Informe o id do produto a ser removido: ")
+	id, _ := strconv.Atoi(idStr)
 
 	ret := produtos.Excluir(id)
 	switch ret {
@@ -119,7 +130,6 @@ func removerProduto() {
 		fmt.Println("Produto removido com sucesso!")
 	}
 }
-
 func buscarProdutoId() {
 	id := leInt("Informe o id do produto a ser buscado: ")
 
@@ -131,11 +141,12 @@ func buscarProdutoId() {
 	}
 }
 
+
 func buscarProdutoNome() {
 	comecaCom := leTexto("Informe o nome do produto ou o início do nome: ")
 
-	produtosEncontrados, totalProdutosEncontrados := produtos.BuscarNome(comecaCom)
-	if totalProdutosEncontrados == 0 {
+	produtosEncontrados, _ := produtos.BuscarNome(comecaCom)
+	if len(produtosEncontrados) == 0 {
 		fmt.Println("Erro! Não foi encontrado nenhum produto com esse nome.")
 	} else {
 		for _, produtoEncontrado := range produtosEncontrados {
@@ -183,15 +194,14 @@ func cadastrarProdutosEmLote() {
 		}
 	}
 }
-func alterarPreco() {
-	id := leInt("Informe o ID do produto para alterar o preço: ")
-	novoPreco := leFloat("Informe o novo preço para o produto: ")
-
-	ret := produtos.AtualizarPreco(id, novoPreco)
-	switch ret {
-	case -1:
-		fmt.Println("Erro! Produto não encontrado.")
-	case 0:
-		fmt.Println("Preço do produto atualizado com sucesso!")
+/*func  alterarPreco(lista *ListaProdutos, id int, novoPreco float64) int {
+	produtoEncontrado, indice := buscarProdutoId(lista, id)
+	if indice == -1 {
+		return -1 // Produto não encontrado
 	}
-}
+
+	// Atualiza apenas o preço do produto encontrado
+	produtoEncontrado.Preco = novoPreco
+
+	return 0 // Atualização bem-sucedida
+}*/

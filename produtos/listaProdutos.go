@@ -1,143 +1,138 @@
 package produtos
 
 import (
-	m "mcronalds/metricas"
-	"strings"
+    m "mcronalds/metricas"
+    "strings"
+
 )
 
-const maxProdutos = 50
 
-var Produtos [maxProdutos]Produto
-var totalProdutos = 0
 
-func tentarCriar(nome, descricao string, preco float64, id int) Produto {
-	if id != -1 {
-		_, idProcurado := BuscarId(id)
-		if idProcurado != -1 { return Produto{} }
-	}
-
-	return criar(nome, descricao, preco, id)
+type NoProduto struct {
+    Produto Produto
+    Next    *NoProduto
 }
 
-/*
-Adiciona um produto com nome, descrição e preço à lista de produtos.
-Adiciona o produto primeiro espaço vazio da lista.
-Caso já exista um produto com o mesmo id, não adiciona e retorna -3.
-Caso já exista um produto com o mesmo nome, não adiciona e retorna erro -2.
-Retorna -1 caso a lista esteja cheia, ou o número de produtos cadastrados em caso de sucesso.
-*/func AdicionarUnico(nome, descricao string, preco float64, id int) int {
-	if totalProdutos == maxProdutos {
-		return -1 // Overflow
-	}
-
-	for _, produto := range Produtos {
-		if produto.Nome == nome {
-			return -2 // Produto com mesmo nome já existe
-		}
-	}
-
-	maxID := -1
-	for _, produto := range Produtos {
-		if produto.Id > maxID {
-			maxID = produto.Id
-		}
-	}
-
-	novoID := maxID + 1
-	produtoCriado := tentarCriar(nome, descricao, preco, novoID)
-	if (produtoCriado == Produto{}) {
-		return -3 // Erro ao criar o produto
-	}
-
-	Produtos[totalProdutos] = produtoCriado
-	totalProdutos++
-	m.M.SomaProdutosCadastrados(1)
-	return totalProdutos
+type ListaProdutos struct {
+    Head *NoProduto
+    Tail *NoProduto
 }
 
+var TotalProdutosJaCadastrados = 0
+var ListaDeProdutos ListaProdutos
 
-/*
-Localiza um produto a partir do seu id.
-Retorna o produto encontrado e a sua posição na lista, em caso de sucesso.
-Retorna um produto vazio e -1 em caso de erro.
-*/
-func BuscarId(id int) (Produto, int) {
-	for ind, produto := range Produtos {
-		if (produto == Produto{}) { break }
-		if produto.Id == id {
-			return produto, ind
-		}
-	}
-
-	return Produto{}, -1
+func tentarCriar(nome, descricao string, preco float64, id int) *Produto {
+    if id != -1 {
+        if _, idProcurado := BuscarId(id); idProcurado != -1 {
+            return nil
+        }
+    }
+    return &Produto{Id: id, Nome: nome, Descricao: descricao, Preco: preco}
 }
 
-/*
-Localiza produtos que iniciem com a string passada.
-Retorna um slice com todos os produtos encontrados, e o tamanho do slice.
-*/
+func AdicionarUnico(nome, descricao string, preco float64, id int) int {
+    novoProduto := tentarCriar(nome, descricao, preco, id)
+    if novoProduto == nil {
+        return -3 // Erro ao criar o produto
+    }
+
+    ListaDeProdutos.AdicionarProduto(*novoProduto)
+    m.M.SomaProdutosCadastrados(1)
+    TotalProdutosJaCadastrados++
+    return TotalProdutosJaCadastrados
+}
+
+func BuscarId(id int) (*Produto, int) {
+    atual := ListaDeProdutos.Head
+    indice := 0
+
+    for atual != nil {
+        if atual.Produto.Id == id {
+            return &atual.Produto, indice
+        }
+        atual = atual.Next
+        indice++
+    }
+
+    return nil, -1
+}
+
 func BuscarNome(comecaCom string) ([]Produto, int) {
-	var produtosEncontrados []Produto
+    var produtosEncontrados []Produto
+    atual := ListaDeProdutos.Head
 
-	for _, produto := range Produtos {
-		if (produto == Produto{}) { break }
+    for atual != nil {
+        if strings.HasPrefix(atual.Produto.Nome, comecaCom) {
+            produtosEncontrados = append(produtosEncontrados, atual.Produto)
+        }
+        atual = atual.Next
+    }
 
-		if strings.HasPrefix(produto.Nome, comecaCom) {
-			produtosEncontrados = append(produtosEncontrados, produto)
-		}
-	}
-	return produtosEncontrados, len(produtosEncontrados)
+    return produtosEncontrados, len(produtosEncontrados)
 }
 
-/*
-Exibe todos os produtos cadastrados.
-*/
 func Exibir() {
-	for _, produto := range Produtos {
-		if (produto == Produto{}) { break }
-		produto.Exibir()
-	}
+    atual := ListaDeProdutos.Head
+
+    for atual != nil {
+        atual.Produto.Exibir()
+        atual = atual.Next
+    }
 }
 
-/*
-Remove um produto da lista a partir do seu id.
-Retorna -2 caso não haja produtos na lista.
-Retorna -1 caso não haja um produto com o id passado, ou 0 em caso de sucesso.
-*/
-func Excluir(id int) int {
-	if totalProdutos == 0 { return -2 }
-
-	_, ind := BuscarId(id)
-	if ind == -1 { return -1 }
-
-	for i := ind; i < totalProdutos - 1; i++ {
-		Produtos[i] = Produtos[i + 1]
-	}
-	totalProdutos--
-	Produtos[totalProdutos] = Produto{}
-	m.M.SomaProdutosCadastrados(-1)
-	return 0
-}
 func ExibirPorNome() {
-	produtosOrdenados := make([]Produto, totalProdutos)
-	copy(produtosOrdenados, Produtos[:totalProdutos])
+    produtosOrdenados := make([]Produto, TotalProdutosJaCadastrados)
+    atual := ListaDeProdutos.Head
 
-	for i := 0; i < totalProdutos-1; i++ {
-		minIndex := i
-		for j := i + 1; j < totalProdutos; j++ {
-			if strings.ToLower(produtosOrdenados[j].Nome) < strings.ToLower(produtosOrdenados[minIndex].Nome) {
-				minIndex = j
-			}
-		}
-		if minIndex != i {
-			produtosOrdenados[i], produtosOrdenados[minIndex] = produtosOrdenados[minIndex], produtosOrdenados[i]
-		}
-	}
+    for i := 0; atual != nil; i++ {
+        produtosOrdenados[i] = atual.Produto
+        atual = atual.Next
+    }
 
-	for _, produto := range produtosOrdenados {
-		if (produto == Produto{}) {
-			break
-		}
-		produto.Exibir()
-	}
+    for i := 0; i < TotalProdutosJaCadastrados-1; i++ {
+        minIndex := i
+        for j := i + 1; j < TotalProdutosJaCadastrados; j++ {
+            if strings.ToLower(produtosOrdenados[j].Nome) < strings.ToLower(produtosOrdenados[minIndex].Nome) {
+                minIndex = j
+            }
+        }
+        if minIndex != i {
+            produtosOrdenados[i], produtosOrdenados[minIndex] = produtosOrdenados[minIndex], produtosOrdenados[i]
+        }
+    }
+
+    for i := 0; i < TotalProdutosJaCadastrados; i++ {
+        produtosOrdenados[i].Exibir()
+    }
 }
+
+func Excluir(id int) int {
+    atual := ListaDeProdutos.Head
+    anterior := &NoProduto{}
+
+    if atual == nil {
+        return -2 // Lista vazia
+    }
+
+    if atual.Produto.Id == id {
+        ListaDeProdutos.Head = atual.Next
+        m.M.SomaProdutosCadastrados(-1)
+        TotalProdutosJaCadastrados--
+        return 0 // Exclusão bem-sucedida
+    }
+
+    for atual != nil {
+        if atual.Produto.Id == id {
+            anterior.Next = atual.Next
+            m.M.SomaProdutosCadastrados(-1)
+            TotalProdutosJaCadastrados--
+            return 0 // Exclusão bem-sucedida
+        }
+        anterior = atual
+        atual = atual.Next
+    }
+
+    return -1 // Produto não encontrado
+}
+
+
