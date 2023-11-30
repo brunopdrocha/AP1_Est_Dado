@@ -55,7 +55,7 @@ func Cli() {
 		case "8":
 			metricas.M.ExibirMetricas()
 		case "9":
-			//alterarPreco()
+			atualizarPreco()
 		case "10":
 			produtos.ExibirPorNome()
 		case "20":
@@ -117,19 +117,22 @@ func cadastrarProduto() {
 }
 
 func removerProduto() {
-	idStr := leTexto("Informe o id do produto a ser removido: ")
-	id, _ := strconv.Atoi(idStr)
+    idStr := leTexto("Informe o id do produto a ser removido: ")
+    id, _ := strconv.Atoi(idStr)
 
-	ret := produtos.Excluir(id)
-	switch ret {
-	case -2:
-		fmt.Println("Erro! Lista de produtos está vazia.")
-	case -1:
-		fmt.Println("Erro! Produto buscado não existe.")
-	default:
-		fmt.Println("Produto removido com sucesso!")
-	}
+    ret, removedID := produtos.Excluir(id)
+    switch ret {
+    case -2:
+        fmt.Println("Erro! Lista de produtos está vazia.")
+    case -1:
+        fmt.Println("Erro! Produto buscado não existe.")
+    default:
+        fmt.Println("Produto removido com sucesso! ID removido:", removedID)
+    }
 }
+
+
+
 func buscarProdutoId() {
 	id := leInt("Informe o id do produto a ser buscado: ")
 
@@ -194,14 +197,19 @@ func cadastrarProdutosEmLote() {
 		}
 	}
 }
-/*func  alterarPreco(lista *ListaProdutos, id int, novoPreco float64) int {
-	produtoEncontrado, indice := buscarProdutoId(lista, id)
-	if indice == -1 {
-		return -1 // Produto não encontrado
-	}
 
-	// Atualiza apenas o preço do produto encontrado
-	produtoEncontrado.Preco = novoPreco
+func atualizarPreco() {
+    idStr := leTexto("Informe o ID do produto que deseja atualizar o preço: ")
+    id, _ := strconv.Atoi(idStr)
 
-	return 0 // Atualização bem-sucedida
-}*/
+    novoPreco := leFloat("Informe o novo preço do produto (em R$): ")
+
+    produto, indice := produtos.BuscarId(id)
+    if indice == -1 {
+        fmt.Println("Erro! Produto buscado não existe.")
+        return
+    }
+
+    produto.Preco = novoPreco
+    fmt.Println("Preço do produto atualizado com sucesso!")
+}

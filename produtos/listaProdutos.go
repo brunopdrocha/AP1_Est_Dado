@@ -31,7 +31,9 @@ func tentarCriar(nome, descricao string, preco float64, id int) *Produto {
 }
 
 func AdicionarUnico(nome, descricao string, preco float64, id int) int {
-    novoProduto := tentarCriar(nome, descricao, preco, id)
+    novoID := TotalProdutosJaCadastrados+ 1
+
+    novoProduto := tentarCriar(nome, descricao, preco, novoID)
     if novoProduto == nil {
         return -3 // Erro ao criar o produto
     }
@@ -39,8 +41,16 @@ func AdicionarUnico(nome, descricao string, preco float64, id int) int {
     ListaDeProdutos.AdicionarProduto(*novoProduto)
     m.M.SomaProdutosCadastrados(1)
     TotalProdutosJaCadastrados++
-    return TotalProdutosJaCadastrados
+    return novoProduto.Id
 }
+
+func obterUltimoID() int {
+    if ListaDeProdutos.Tail != nil {
+        return ListaDeProdutos.Tail.Produto.Id
+    }
+    return 0
+}
+
 
 func BuscarId(id int) (*Produto, int) {
     atual := ListaDeProdutos.Head
@@ -111,40 +121,54 @@ func ExibirPorNome() {
     }
 }
 
-
-func Excluir(id int) int {
+func Excluir(id int) (int, int) {
     atual := ListaDeProdutos.Head
     anterior := &NoProduto{}
 
     if atual == nil {
-        return -2 // Lista vazia
+        return -2, -1 // Lista vazia
     }
 
     if atual.Produto.Id == id {
         ListaDeProdutos.Head = atual.Next
+        reajustarIDs(id) // Reajustar IDs após a remoção
         m.M.SomaProdutosCadastrados(-1)
-        TotalProdutosJaCadastrados--
-        return 0 // Exclusão bem-sucedida
+     
+
+        // Se a lista ficar vazia após a remoção, ajuste o Tail para nil
+        if ListaDeProdutos.Head == nil {
+            ListaDeProdutos.Tail = nil
+        }
+
+        return 0, id // Exclusão bem-sucedida
     }
 
     for atual != nil {
         if atual.Produto.Id == id {
-            if atual.Next == nil { // Se for o último elemento
-                anterior.Next = nil
-                m.M.SomaProdutosCadastrados(-1)
-                TotalProdutosJaCadastrados--
-                return 0 // Exclusão bem-sucedida
-            }
             anterior.Next = atual.Next
+            reajustarIDs(id) // Reajustar IDs após a remoção
             m.M.SomaProdutosCadastrados(-1)
-            TotalProdutosJaCadastrados--
-            return 0 // Exclusão bem-sucedida
+          
+            // Se o elemento removido for o último, ajuste o Tail para o anterior
+            if atual.Next == nil {
+                ListaDeProdutos.Tail = anterior
+            }
+
+            return 0, id // Exclusão bem-sucedida
         }
         anterior = atual
         atual = atual.Next
     }
 
-    return -1 // Produto não encontrado
+    return -1, -1 // Produto não encontrado
 }
 
-
+func reajustarIDs(idRemovido int) {
+    atual := ListaDeProdutos.Head
+    for atual != nil {
+        if atual.Produto.Id > idRemovido {
+            atual.Produto.Id--
+        }
+        atual = atual.Next
+    }
+}
