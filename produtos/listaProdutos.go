@@ -72,11 +72,26 @@ func BuscarNome(comecaCom string) ([]Produto, int) {
 }
 
 func Exibir() {
-    atual := ListaDeProdutos.Head
+    atual := ListaDeProdutos.Head 
 
     for atual != nil {
         atual.Produto.Exibir()
         atual = atual.Next
+    }
+}
+
+func bubbleSortPorNome(produtos *[]Produto, total int) {
+    trocou := true
+
+    for trocou {
+        trocou = false
+        total--
+        for i := 0; i < total; i++ {
+            if strings.ToLower((*produtos)[i].Nome) > strings.ToLower((*produtos)[i+1].Nome) {
+                (*produtos)[i], (*produtos)[i+1] = (*produtos)[i+1], (*produtos)[i]
+                trocou = true
+            }
+        }
     }
 }
 
@@ -89,22 +104,13 @@ func ExibirPorNome() {
         atual = atual.Next
     }
 
-    for i := 0; i < TotalProdutosJaCadastrados-1; i++ {
-        minIndex := i
-        for j := i + 1; j < TotalProdutosJaCadastrados; j++ {
-            if strings.ToLower(produtosOrdenados[j].Nome) < strings.ToLower(produtosOrdenados[minIndex].Nome) {
-                minIndex = j
-            }
-        }
-        if minIndex != i {
-            produtosOrdenados[i], produtosOrdenados[minIndex] = produtosOrdenados[minIndex], produtosOrdenados[i]
-        }
-    }
+    bubbleSortPorNome(&produtosOrdenados, TotalProdutosJaCadastrados)
 
     for i := 0; i < TotalProdutosJaCadastrados; i++ {
         produtosOrdenados[i].Exibir()
     }
 }
+
 
 func Excluir(id int) int {
     atual := ListaDeProdutos.Head
@@ -123,6 +129,12 @@ func Excluir(id int) int {
 
     for atual != nil {
         if atual.Produto.Id == id {
+            if atual.Next == nil { // Se for o último elemento
+                anterior.Next = nil
+                m.M.SomaProdutosCadastrados(-1)
+                TotalProdutosJaCadastrados--
+                return 0 // Exclusão bem-sucedida
+            }
             anterior.Next = atual.Next
             m.M.SomaProdutosCadastrados(-1)
             TotalProdutosJaCadastrados--
